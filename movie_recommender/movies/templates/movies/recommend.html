@@ -42,6 +42,11 @@
                         <h5 class="card-title">{{ movie.title }}</h5>
                         <p class="card-text">Рейтинг: {{ movie.rating }}</p>
                         <p class="card-text">Дата выхода: {{ movie.release_date }}</p>
+                        {% for genre in movie.genres.all %}
+                    {{ genre.name }}{% if not forloop.last %}, {% endif %}
+                {% empty %}
+                    Не указаны
+                {% endfor %}
                         <a href="{% url 'movies:movie_detail' movie.id %}" class="btn btn-primary">Подробнее</a>
                     </div>
                 </div>

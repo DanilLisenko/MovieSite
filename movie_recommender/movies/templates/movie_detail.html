@@ -40,7 +40,14 @@
                 <p><strong>Описание:</strong> {{ movie.description }}</p>
                 <p><strong>Рейтинг:</strong> {{ movie.rating }}</p>
                 <p><strong>Дата выхода:</strong> {{ movie.release_date }}</p>
+                <strong>Жанры:</strong>
+                {% for genre in movie.genres.all %}
+                    {{ genre.name }}{% if not forloop.last %}, {% endif %}
+                {% empty %}
+                    Не указаны
+                {% endfor %}
             </div>
+
         </div>
         <form action="{% url 'movies:add_to_watchlist' movie.id %}" method="post">
             {% csrf_token %}
@@ -61,6 +68,38 @@
         <h3>Статистика</h3>
         <!-- Добавьте блок статистики -->
         <p>Здесь будет статистика по фильму.</p>
+
+        <hr>
+<h2>Недавние фильмы</h2>
+<div class="row">
+    {% for recent in recent_movies %}
+        <div class="col-md-4">
+            <a href="{% url 'movies:movie_detail' recent.id %}" class="text-decoration-none text-dark">
+                <div class="card">
+                    <img src="{{ recent.poster_url }}" class="card-img-top" alt="{{ recent.title }}">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ recent.title }}</h5>
+                        <p class="card-text">Рейтинг: {{ recent.rating }}</p>
+                        <p class="card-text">Дата выхода: {{ recent.release_date }}</p>
+                        <p class="card-text">
+                            <small class="text-muted">
+                                {% for genre in recent.genres.all %}
+                                    {{ genre.name }}{% if not forloop.last %}, {% endif %}
+                                {% empty %}
+                                    не указаны
+                                {% endfor %}
+                            </small>
+                        </p>
+                    </div>
+                </div>
+            </a>
+        </div>
+    {% empty %}
+        <p>Нет недавних фильмов.</p>
+    {% endfor %}
+</div>
+
+
     </div>
 </body>
 </html>

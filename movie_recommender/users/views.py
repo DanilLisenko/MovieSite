@@ -16,7 +16,7 @@ def register(request):
         if form.is_valid():
             user = form.save()
             login(request, user)  # Автоматический вход после регистрации
-            return redirect('profile')  # Перенаправляем на профиль
+            return redirect('users:profile')  # Перенаправляем на профиль
     else:
         form = UserRegistrationForm()
     return render(request, 'users/register.html', {'form': form})

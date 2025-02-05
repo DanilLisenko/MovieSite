@@ -3,16 +3,20 @@ from users.models import CustomUser
 from googletrans import Translator
 
 
+class Genre(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+
+    def __str__(self):
+        return self.name
+
+
 class Movie(models.Model):
-    """
-    Модель фильма с основными полями для описания.
-    """
     title = models.CharField(max_length=255)
-    description = models.TextField()
-    genre = models.CharField(max_length=100)
-    release_date = models.DateField(null=True, blank=True)  # Сделано необязательным
-    rating = models.FloatField()
-    poster_url = models.URLField(blank=True, null=True)  # Ссылка на постер фильма
+    description = models.TextField(blank=True)
+    genres = models.ManyToManyField(Genre, blank=True)
+    release_date = models.DateField(null=True, blank=True)
+    rating = models.FloatField(default=0)
+    poster_url = models.URLField(blank=True)
 
     def __str__(self):
         return self.title

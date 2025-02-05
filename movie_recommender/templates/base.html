@@ -64,6 +64,15 @@
                                 <h5 class="card-title">{{ movie.title }}</h5>
                                 <p class="card-text">Рейтинг: {{ movie.rating }}</p>
                                 <p class="card-text">{{ movie.release_date }}</p>
+                                <p class="card-text">
+                            <small class="text-muted">
+                                {% for genre in movie.genres.all %}
+                                    {{ genre.name }}{% if not forloop.last %}, {% endif %}
+                                {% empty %}
+                                    не указаны
+                                {% endfor %}
+                            </small>
+                        </p>
                             </div>
                         </div>
                     </a>

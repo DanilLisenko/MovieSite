@@ -131,7 +131,7 @@ LOGIN_REDIRECT_URL = '/users/profile/'  # Перенаправление пос�
 LOGOUT_REDIRECT_URL = '/'  # Перенаправление после выхода
 
 MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 
 TMDB_API_KEY = '8bf31002475b2fd4bc514cd9d272c4e5'  # Замените на свой ключ
 
