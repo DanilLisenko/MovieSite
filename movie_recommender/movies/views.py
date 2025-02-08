@@ -1,8 +1,14 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
-from .models import Movie, Watchlist, Review  # Импортируем Review
+from .models import Movie, Watchlist, Review, Actor, Genre , MovieCredit, Person
 from .forms import ReviewForm
+
+def actors_list(request):
+    actors = Person.objects.filter(
+        moviecredit__role='Actor'
+    ).distinct().prefetch_related('moviecredit_set')
+    return render(request, 'movies/actors_list.html', {'actors': actors})
 
 def recommend_movie(request):
     # Получаем случайный фильм
@@ -27,6 +33,9 @@ def movie_detail(request, movie_id):
     recent_movies = Movie.objects.all().prefetch_related('genres')[:9]
     # Получаем все отзывы для фильма (отсортированные по дате)
     reviews = movie.reviews.all().order_by('-created_at')
+
+    actors = MovieCredit.objects.filter(movie=movie, role='Actor')[:5]
+    directors = MovieCredit.objects.filter(movie=movie, role='Director')
 
     user_review = None
     if request.user.is_authenticated:
@@ -58,6 +67,8 @@ def movie_detail(request, movie_id):
 
     context = {
         'movie': movie,
+        'actors': actors,
+        'directors': directors,
         'recent_movies': recent_movies,
         'reviews': reviews,
         'form': form,
@@ -83,3 +94,48 @@ def mark_as_watched(request, movie_id):
     watchlist_item.watched = True  # Отмечаем как просмотренный
     watchlist_item.save()
     return redirect('movies:movie_detail', movie_id=movie.id)
+
+def movie_collections(request):
+    # Получаем топ фильмов (например, с самым высоким рейтингом) до 2020 года
+    top_movies = Movie.objects.filter(release_date__lt='2020-01-01').order_by('-rating')[:100]
+
+    # Получаем фильмы по жанрам, фильтруем по году выпуска, сортируем по рейтингу
+    genres = Genre.objects.all()
+    genre_collections = {
+        genre.name: genre.movie_set.filter(release_date__lt='2020-01-01').order_by('-rating')[:100]
+        for genre in genres
+    }
+
+    context = {
+        'top_movies': top_movies,
+        'genre_collections': genre_collections
+    }
+
+    return render(request, 'movies/movie_collections.html', context)
+
+
+
+def actors_list(request):
+    """Страница со списком актеров."""
+    actors = Actor.objects.all()
+    return render(request, 'movies/actors_list.html', {'actors': actors})
+
+
+def actor_detail(request, actor_id):
+    """Страница актера с его биографией и фильмами."""
+    actor = get_object_or_404(Actor, id=actor_id)
+    movies = actor.movies.all()  # Получаем фильмы, где снимался актер
+
+    return render(request, 'movies/actor_detail.html', {
+        'actor': actor,
+        'movies': movies,
+    })
+
+
+def person_detail(request, person_id):
+    person = get_object_or_404(Person, id=person_id)
+    filmography = MovieCredit.objects.filter(person=person).select_related('movie')
+    return render(request, 'movies/person_detail.html', {
+        'person': person,
+        'filmography': filmography
+    })

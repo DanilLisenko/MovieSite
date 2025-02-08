@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">Подборки фильмов</h1>
+
+    <!-- Топ-100 фильмов -->
+    <h2 class="mb-3">Топ-100 фильмов</h2>
+    <div class="row" id="top-movies">
+        {% for movie in top_movies|slice:":100" %}
+            <div class="col-md-3 mb-3 movie-item" style="{% if forloop.counter > 4 %}display: none;{% endif %}">
+                <div class="card shadow-sm">
+                    <img src="{{ movie.poster_url }}" class="card-img-top" alt="{{ movie.title }}">
+                    <div class="card-body">
+                        <h6 class="card-title">{{ movie.title }}</h6>
+                        <a href="{% url 'movies:movie_detail' movie.id %}" class="btn btn-sm btn-outline-secondary">Подробнее</a>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    {% if top_movies|length > 4 %}
+        <button class="btn btn-outline-primary load-more" data-type="top" data-shown="4">Показать больше</button>
+    {% endif %}
+
+    <!-- Подборки по жанрам -->
+    {% for genre, movies in genre_collections.items %}
+        <h2 class="mt-4">{{ genre }}</h2>
+        <div class="row genre-movies" id="genre-{{ forloop.counter }}">
+            {% for movie in movies|slice:":100" %}
+                <div class="col-md-3 mb-3 movie-item" style="{% if forloop.counter > 4 %}display: none;{% endif %}">
+                    <div class="card shadow-sm">
+                        <img src="{{ movie.poster_url }}" class="card-img-top" alt="{{ movie.title }}">
+                        <div class="card-body">
+                            <h6 class="card-title">{{ movie.title }}</h6>
+                            <a href="{% url 'movies:movie_detail' movie.id %}" class="btn btn-sm btn-outline-secondary">Подробнее</a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        {% if movies|length > 4 %}
+            <button class="btn btn-outline-primary load-more" data-genre="genre-{{ forloop.counter }}" data-shown="4">Показать больше</button>
+        {% endif %}
+    {% endfor %}
+
+</div>
+{% endblock %}

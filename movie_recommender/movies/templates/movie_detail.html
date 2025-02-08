@@ -48,6 +48,34 @@
                     {% endfor %}
                 </p>
             </div>
+            <h3>Актерский состав</h3>
+    <div class="row">
+        {% for credit in actors %}
+        <div class="col-md-2 mb-3">
+            <div class="card">
+                {% if credit.person.photo_url %}
+                <img src="{{ credit.person.photo_url }}" class="card-img-top" alt="{{ credit.person.name }}">
+                {% endif %}
+                <div class="card-body">
+                    <h6 class="card-title">{{ credit.person.name }}</h6>
+                    <p class="card-text small">
+                        {% if credit.character %}
+                        <em>{{ credit.character }}</em>
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <h3>Режиссеры</h3>
+    <ul>
+        {% for credit in directors %}
+        <li>{{ credit.person.name }}</li>
+        {% endfor %}
+    </ul>
+
         </div>
 
         <!-- Форма для добавления фильма в отложенные и отметки как просмотренного -->
