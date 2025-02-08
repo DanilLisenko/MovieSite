@@ -40,65 +40,90 @@
                 <p><strong>Описание:</strong> {{ movie.description }}</p>
                 <p><strong>Рейтинг:</strong> {{ movie.rating }}</p>
                 <p><strong>Дата выхода:</strong> {{ movie.release_date }}</p>
-                <strong>Жанры:</strong>
-                {% for genre in movie.genres.all %}
-                    {{ genre.name }}{% if not forloop.last %}, {% endif %}
-                {% empty %}
-                    Не указаны
-                {% endfor %}
+                <p><strong>Жанры:</strong>
+                    {% for genre in movie.genres.all %}
+                        {{ genre.name }}{% if not forloop.last %}, {% endif %}
+                    {% empty %}
+                        Не указаны
+                    {% endfor %}
+                </p>
             </div>
-
         </div>
+
+        <!-- Форма для добавления фильма в отложенные и отметки как просмотренного -->
         <form action="{% url 'movies:add_to_watchlist' movie.id %}" method="post">
             {% csrf_token %}
-            <button type="submit">Добавить в отложенные</button>
+            <button type="submit" class="btn btn-outline-primary">Добавить в отложенные</button>
         </form>
-
-        <form action="{% url 'movies:mark_as_watched' movie.id %}" method="post">
+        <form action="{% url 'movies:mark_as_watched' movie.id %}" method="post" class="mt-2">
             {% csrf_token %}
-            <button type="submit">Отметить как просмотренный</button>
+            <button type="submit" class="btn btn-outline-success">Отметить как просмотренный</button>
         </form>
 
         <hr>
         <h3>Отзывы</h3>
-        <!-- Добавьте блок отзывов -->
-        <p>Здесь будут отображаться отзывы пользователей.</p>
-
-        <hr>
-        <h3>Статистика</h3>
-        <!-- Добавьте блок статистики -->
-        <p>Здесь будет статистика по фильму.</p>
-
-        <hr>
-<h2>Недавние фильмы</h2>
-<div class="row">
-    {% for recent in recent_movies %}
-        <div class="col-md-4">
-            <a href="{% url 'movies:movie_detail' recent.id %}" class="text-decoration-none text-dark">
-                <div class="card">
-                    <img src="{{ recent.poster_url }}" class="card-img-top" alt="{{ recent.title }}">
-                    <div class="card-body">
-                        <h5 class="card-title">{{ recent.title }}</h5>
-                        <p class="card-text">Рейтинг: {{ recent.rating }}</p>
-                        <p class="card-text">Дата выхода: {{ recent.release_date }}</p>
-                        <p class="card-text">
-                            <small class="text-muted">
-                                {% for genre in recent.genres.all %}
-                                    {{ genre.name }}{% if not forloop.last %}, {% endif %}
-                                {% empty %}
-                                    не указаны
-                                {% endfor %}
-                            </small>
-                        </p>
-                    </div>
-                </div>
-            </a>
+{% if reviews %}
+    {% for review in reviews %}
+        <div class="card mb-3">
+            <div class="card-body">
+                <h5 class="card-title">
+                    {{ review.user.username }}
+                    <small class="text-muted">{{ review.created_at|date:"d M Y" }}</small>
+                </h5>
+                <p><strong>Оценка:</strong> {{ review.rating }}</p>
+                {% if review.review_text %}
+                    <p class="card-text"><strong>Отзыв:</strong> {{ review.review_text }}</p>
+                {% endif %}
+            </div>
         </div>
-    {% empty %}
-        <p>Нет недавних фильмов.</p>
     {% endfor %}
-</div>
+{% else %}
+    <p>Нет отзывов для этого фильма.</p>
+{% endif %}
 
+<!-- Форма для оставления или редактирования отзыва -->
+{% if user.is_authenticated %}
+    <hr>
+    <h4>{% if user_review %}Изменить ваш отзыв{% else %}Оставьте свой отзыв{% endif %}</h4>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary">{% if user_review %}Обновить отзыв{% else %}Отправить отзыв{% endif %}</button>
+    </form>
+{% else %}
+    <p><a href="{% url 'users:login' %}">Войдите</a>, чтобы оставить отзыв.</p>
+{% endif %}
+
+        <hr>
+        <!-- Блок "Недавние фильмы" (как у вас уже есть) -->
+        <h2>Недавние фильмы</h2>
+        <div class="row">
+            {% for recent in recent_movies %}
+                <div class="col-md-4">
+                    <a href="{% url 'movies:movie_detail' recent.id %}" class="text-decoration-none text-dark">
+                        <div class="card">
+                            <img src="{{ recent.poster_url }}" class="card-img-top" alt="{{ recent.title }}">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ recent.title }}</h5>
+                                <p class="card-text">Рейтинг: {{ recent.rating }}</p>
+                                <p class="card-text">Дата выхода: {{ recent.release_date }}</p>
+                                <p class="card-text">
+                                    <small class="text-muted">
+                                        {% for genre in recent.genres.all %}
+                                            {{ genre.name }}{% if not forloop.last %}, {% endif %}
+                                        {% empty %}
+                                            не указаны
+                                        {% endfor %}
+                                    </small>
+                                </p>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            {% empty %}
+                <p>Нет недавних фильмов.</p>
+            {% endfor %}
+        </div>
 
     </div>
 </body>

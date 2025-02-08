@@ -6,7 +6,7 @@ from .models import CustomUser
 from .forms import UserRegistrationForm, UserLoginForm
 from django.shortcuts import get_object_or_404
 from .forms import SaveMovieForm,EditProfileForm
-from movies.models import Watchlist, Movie
+from movies.models import Watchlist, Movie , Review
 
 
 
@@ -44,6 +44,8 @@ def profile(request):
     user = request.user
     watched_movies = Watchlist.objects.filter(user=user, watched=True)
     watchlist_movies = Watchlist.objects.filter(user=user, watched=False)
+    # Получаем отзывы текущего пользователя (можно добавить .select_related('movie') для оптимизации)
+    reviews = Review.objects.filter(user=user).select_related('movie')
 
     context = {
         'user': user,
@@ -51,6 +53,7 @@ def profile(request):
         'watchlist_count': watchlist_movies.count(),
         'watched_movies': watched_movies,
         'watchlist_movies': watchlist_movies,
+        'reviews': reviews,  # Передаём отзывы в шаблон
     }
     return render(request, 'users/profile.html', context)
 

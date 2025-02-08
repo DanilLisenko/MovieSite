@@ -1,11 +1,8 @@
-from django.shortcuts import render
-from django.http import JsonResponse
-from .models import Movie,Watchlist
-from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, get_object_or_404, redirect
-from django.db.models.signals import post_save
-from django.dispatch import receiver
-
+from django.http import JsonResponse
+from django.contrib.auth.decorators import login_required
+from .models import Movie, Watchlist, Review  # Импортируем Review
+from .forms import ReviewForm
 
 def recommend_movie(request):
     # Получаем случайный фильм
@@ -24,16 +21,50 @@ def search_movie_tmdb(request):
 
     return render(request, 'movies/search_movie_tmdb.html')
 
+
 def movie_detail(request, movie_id):
-    # Получаем фильм по его ID или возвращаем 404
     movie = get_object_or_404(Movie, id=movie_id)
-    # Получаем список недавних фильмов с предзагрузкой жанров
     recent_movies = Movie.objects.all().prefetch_related('genres')[:9]
-    # Передаём их в контекст шаблона
-    return render(request, 'movie_detail.html', {
+    # Получаем все отзывы для фильма (отсортированные по дате)
+    reviews = movie.reviews.all().order_by('-created_at')
+
+    user_review = None
+    if request.user.is_authenticated:
+        try:
+            user_review = reviews.get(user=request.user)
+        except Review.DoesNotExist:
+            user_review = None
+
+    if request.method == 'POST':
+        if not request.user.is_authenticated:
+            return redirect('users:login')
+        # Если отзыв уже существует, обновляем его; иначе — создаём новый
+        if user_review:
+            form = ReviewForm(request.POST, instance=user_review)
+        else:
+            form = ReviewForm(request.POST)
+        if form.is_valid():
+            review = form.save(commit=False)
+            review.user = request.user
+            review.movie = movie
+            review.save()
+            return redirect('movies:movie_detail', movie_id=movie.id)
+    else:
+        # Если пользователь уже оставил отзыв, заполняем форму его данными
+        if user_review:
+            form = ReviewForm(instance=user_review)
+        else:
+            form = ReviewForm()
+
+    context = {
         'movie': movie,
         'recent_movies': recent_movies,
-    })
+        'reviews': reviews,
+        'form': form,
+        'user_review': user_review,
+    }
+    return render(request, 'movie_detail.html', context)
+
 @login_required
 def add_to_watchlist(request, movie_id):
     movie = get_object_or_404(Movie, id=movie_id)

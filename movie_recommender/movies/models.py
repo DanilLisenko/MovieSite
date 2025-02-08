@@ -1,4 +1,5 @@
 from django.db import models
+from django import forms
 from users.models import CustomUser
 from googletrans import Translator
 
@@ -45,12 +46,16 @@ class Review(models.Model):
     """
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='reviews')
     movie = models.ForeignKey(Movie, on_delete=models.CASCADE, related_name='reviews')
-    review_text = models.TextField()
+    review_text = models.TextField(blank=True)  # Отзыв может быть пустым
     rating = models.IntegerField()
     created_at = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        unique_together = (('user', 'movie'),)  # Пользователь может оставить только один отзыв на фильм
+
     def __str__(self):
-        return f"Review by {self.user.username} on {self.movie.title}"
+        return f"Отзыв от {self.user.username} на {self.movie.title}"
+
 
 
 class Watchlist(models.Model):

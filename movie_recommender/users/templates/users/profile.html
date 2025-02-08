@@ -59,6 +59,36 @@
     </div>
 </div>
 
+<h2>Мои отзывы</h2>
+<div class="container">
+    <div class="row">
+        {% if reviews %}
+            {% for review in reviews %}
+                <div class="col-md-3 mb-3">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                <a href="{% url 'movies:movie_detail' review.movie.id %}">
+                                    {{ review.movie.title }}
+                                </a>
+                            </h5>
+                            <p class="card-text"><strong>Оценка:</strong> {{ review.rating }}</p>
+                            {% if review.review_text %}
+                                <p class="card-text"><strong>Отзыв:</strong> {{ review.review_text }}</p>
+                            {% endif %}
+                        </div>
+                        <div class="card-footer">
+                            <small class="text-muted">{{ review.created_at|date:"d M Y" }}</small>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p>Пока отзывов нет.</p>
+        {% endif %}
+    </div>
+</div>
+
     <a href="{% url 'users:edit_profile' %}">Редактировать профиль</a>
 </body>
 </html>
