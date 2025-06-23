@@ -1,0 +1,33 @@
+<!-- movies/templates/movies/recommend.html -->
+{% extends 'base.html' %}
+
+{% block title %}Рекомендация фильма{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    {% if movie %}
+        <div class="text-center">
+            <h1 data-aos="fade-down">Мы рекомендуем вам посмотреть:</h1>
+            <div class="card mx-auto" style="width: 18rem;" data-aos="fade-up">
+                <img src="{{ movie.poster_url|default:'https://via.placeholder.com/200x300' }}" class="card-img-top" alt="{{ movie.title }}">
+                <div class="card-body">
+                    <h5 class="card-title">{{ movie.title }}</h5>
+                    <p class="card-text">Рейтинг: {{ movie.rating }}</p>
+                    <p class="card-text">Дата выхода: {{ movie.release_date }}</p>
+                    <p class="card-text">
+                        {% for genre in movie.genres.all %}
+                            {{ genre.name }}{% if not forloop.last %}, {% endif %}
+                        {% empty %}
+                            Не указаны
+                        {% endfor %}
+                    </p>
+                    <a href="{% url 'movies:movie_detail' movie.id %}" class="btn btn-primary">Подробнее</a>
+                </div>
+            </div>
+            <a href="{% url 'movies:recommend_movie' %}" class="btn btn-secondary mt-4" data-aos="fade-up">Рекомендовать другой фильм</a>
+        </div>
+    {% else %}
+        <h1 data-aos="fade-down">К сожалению, фильмов пока нет.</h1>
+    {% endif %}
+</div>
+{% endblock %}

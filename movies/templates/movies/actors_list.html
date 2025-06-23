@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>Список актеров</h1>
+    {% if actors %}
+        <div id="actors-container">
+            <div class="row">
+                {% for actor in actors %}
+                    <div class="col-md-4 mb-4">
+                        <div class="card h-100 text-center">
+                            {% if actor.photo_url %}
+                                <img src="{{ actor.photo_url }}" class="card-img-top mx-auto d-block" alt="{{ actor.name }}" style="max-width: 200px; height: auto; padding-top: 10px;" loading="lazy">
+                            {% else %}
+                                <img src="https://via.placeholder.com/200x300" class="card-img-top mx-auto d-block" alt="Нет фото" style="max-width: 200px; height: auto; padding-top: 10px;" loading="lazy">
+                            {% endif %}
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    <a href="{% url 'movies:actor_detail' actor.id %}">{{ actor.name }}</a>
+                                </h5>
+                                <p class="card-text">
+                                    Фильмов: {{ actor.movie_count }}<br>
+                                    Средний рейтинг: {{ actor.avg_rating|floatformat:1|default:'N/A' }}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    {% if forloop.counter|divisibleby:3 and not forloop.last %}
+                        </div><div class="row">
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Кнопка "Загрузить еще" -->
+        {% if actors.has_next %}
+            <div class="text-center mt-4">
+                <button id="load-more-btn" class="btn btn-outline-primary" data-next-page="{{ actors.next_page_number }}" data-total-pages="{{ total_pages }}">
+                    Загрузить еще
+                </button>
+            </div>
+        {% endif %}
+    {% else %}
+        <p>Актеры не найдены.</p>
+    {% endif %}
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const loadMoreBtn = document.getElementById('load-more-btn');
+    if (loadMoreBtn) {
+        console.log('Кнопка найдена, добавляем слушатель событий');
+        loadMoreBtn.addEventListener('click', () => {
+            const nextPage = loadMoreBtn.getAttribute('data-next-page');
+            console.log('Нажата кнопка, загружаем страницу:', nextPage);
+
+            fetch(`/movies/actors/load-more/?page=${nextPage}`)
+                .then(response => {
+                    console.log('Ответ сервера получен:', response.status);
+                    if (!response.ok) {
+                        throw new Error('Ошибка сети: ' + response.status);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Данные от сервера:', data);
+                    const container = document.getElementById('actors-container');
+
+                    // Создаем новый ряд для новых актеров
+                    const newRow = document.createElement('div');
+                    newRow.className = 'row';
+                    container.appendChild(newRow);
+
+                    data.actors.forEach(actor => {
+                        const actorDiv = document.createElement('div');
+                        actorDiv.className = 'col-md-4 mb-4';
+                        actorDiv.innerHTML = `
+                            <div class="card h-100 text-center">
+                                <img src="${actor.photo_url}" class="card-img-top mx-auto d-block" alt="${actor.name}" style="max-width: 200px; height: auto; padding-top: 10px;" loading="lazy">
+                                <div class="card-body">
+                                    <h5 class="card-title">
+                                        <a href="${actor.detail_url}">${actor.name}</a>
+                                    </h5>
+                                    <p class="card-text">
+                                        Фильмов: ${actor.movie_count || 'N/A'}<br>
+                                        Средний рейтинг: ${actor.avg_rating ? actor.avg_rating.toFixed(1) : 'N/A'}
+                                    </p>
+                                </div>
+                            </div>
+                        `;
+                        newRow.appendChild(actorDiv);
+                        console.log('Добавлен актер:', actor.name);
+                    });
+
+                    if (data.has_next) {
+                        loadMoreBtn.setAttribute('data-next-page', data.next_page);
+                        console.log('Обновлена следующая страница:', data.next_page);
+                    } else {
+                        loadMoreBtn.remove();
+                        console.log('Больше страниц нет, кнопка удалена');
+                    }
+                })
+                .catch(error => console.error('Ошибка при загрузке актеров:', error));
+        });
+    } else {
+        console.log('Кнопка "Загрузить еще" не найдена');
+    }
+});
+</script>
+{% endblock %}

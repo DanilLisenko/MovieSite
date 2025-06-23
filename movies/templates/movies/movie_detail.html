@@ -1,0 +1,370 @@
+{% extends 'base.html' %}
+{% load youtube_filters %}
+{% block title %}{{ movie.title }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Хлебные крошки -->
+    <nav aria-label="breadcrumb" data-aos="fade-right">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'movies:movie_list' %}">Главная</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ movie.title }}</li>
+        </ol>
+    </nav>
+
+    <div class="row" data-aos="fade-up">
+        <div class="col-md-4">
+            <img src="{{ movie.poster_url|default:'https://via.placeholder.com/200x300' }}" class="img-fluid rounded" alt="{{ movie.title }}">
+        </div>
+        <div class="col-md-8">
+            <h1>{{ movie.title }}</h1>
+            <p><strong>Описание:</strong> {{ movie.description }}</p>
+            <p><strong>Рейтинг:</strong> {{ movie.rating }}</p>
+            <p><strong>Дата выхода:</strong> {{ movie.release_date }}</p>
+            <p><strong>Жанры:</strong>
+                {% for genre in movie.genres.all %}
+                    {{ genre.name }}{% if not forloop.last %}, {% endif %}
+                {% empty %}
+                    Не указаны
+                {% endfor %}
+            </p>
+            <!-- Кнопки -->
+            {% if user.is_authenticated %}
+                <button class="btn btn-outline-primary add-to-watchlist" data-movie-id="{{ movie.id }}">Добавить в отложенные</button>
+                <button class="btn btn-outline-success mark-as-watched" data-movie-id="{{ movie.id }}">Отметить как просмотренный</button>
+            {% endif %}
+        </div>
+    </div>
+    <!-- Трейлер -->
+    {% if movie.trailer_url %}
+        <div class="mt-4" data-aos="fade-up">
+            <h3>Трейлер</h3>
+            <div class="ratio ratio-16x9">
+                <iframe id="trailer-iframe"
+                        src="{{ movie.trailer_url|youtube_embed_url }}"
+                        title="Трейлер {{ movie.title }}"
+                        frameborder="0"
+                        allowfullscreen></iframe>
+            </div>
+            {% if movie.trailer_urls|length > 1 %}
+                <div class="mt-2">
+                    <button id="prev-trailer" class="btn btn-secondary me-2" disabled>Предыдущий трейлер</button>
+                    <button id="next-trailer" class="btn btn-secondary">Следующий трейлер</button>
+                </div>
+            {% endif %}
+        </div>
+    {% else %}
+        <div class="mt-4" data-aos="fade-up">
+            <p class="text-muted">Трейлер отсутствует.</p>
+        </div>
+    {% endif %}
+    <!-- Режиссеры -->
+    {% if directors %}
+        <h3 class="mt-4" data-aos="fade-right">Режиссеры</h3>
+        <div class="row">
+            {% for credit in directors %}
+                <div class="col-md-2 mb-3" data-aos="fade-up" data-aos-delay="{{ forloop.counter|add:'100' }}">
+                    <div class="card">
+                        {% if credit.person.photo_url %}
+                            <a href="{% url 'movies:person_detail' credit.person.id %}">
+                                <img src="{{ credit.person.photo_url }}" class="card-img-top" alt="{{ credit.person.name }}">
+                            </a>
+                        {% else %}
+                            <img src="https://via.placeholder.com/150x200" class="card-img-top" alt="Нет фото">
+                        {% endif %}
+                        <div class="card-body">
+                            <h6 class="card-title">
+                                <a href="{% url 'movies:person_detail' credit.person.id %}">{{ credit.person.name }}</a>
+                            </h6>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+    <!-- Сценаристы -->
+    {% if writers %}
+        <h3 class="mt-4" data-aos="fade-right">Сценаристы</h3>
+        <div class="row">
+            {% for credit in writers %}
+                <div class="col-md-2 mb-3" data-aos="fade-up" data-aos-delay="{{ forloop.counter|add:'100' }}">
+                    <div class="card">
+                        {% if credit.person.photo_url %}
+                            <a href="{% url 'movies:person_detail' credit.person.id %}">
+                                <img src="{{ credit.person.photo_url }}" class="card-img-top" alt="{{ credit.person.name }}">
+                            </a>
+                        {% else %}
+                            <img src="https://via.placeholder.com/150x200" class="card-img-top" alt="Нет фото">
+                        {% endif %}
+                        <div class="card-body">
+                            <h6 class="card-title">
+                                <a href="{% url 'movies:person_detail' credit.person.id %}">{{ credit.person.name }}</a>
+                            </h6>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+    <!-- Актерский состав -->
+    {% if actors %}
+        <h3 class="mt-4" data-aos="fade-right">Актерский состав</h3>
+        <div class="row" id="actors-list">
+            {% for actor in actors|slice:":10" %}
+                <div class="col-md-2 mb-3 actor-card" data-aos="fade-up" data-aos-delay="{{ forloop.counter|add:'100' }}">
+                    <div class="card">
+                        {% if actor.photo_url %}
+                            <a href="{% url 'movies:actor_detail' actor.id %}">
+                                <img src="{{ actor.photo_url }}" class="card-img-top" alt="{{ actor.name }}">
+                            </a>
+                        {% else %}
+                            <img src="https://via.placeholder.com/150x200" class="card-img-top" alt="Нет фото">
+                        {% endif %}
+                        <div class="card-body">
+                            <h6 class="card-title">
+                                <a href="{% url 'movies:actor_detail' actor.id %}">{{ actor.name }}</a>
+                            </h6>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        {% if actors|length > 10 %}
+            <div class="text-center" data-aos="fade-up">
+                <button id="load-more-actors" class="btn btn-primary" data-movie-id="{{ movie.id }}">Загрузить еще</button>
+            </div>
+        {% endif %}
+    {% endif %}
+    <!-- Другие члены съемочной группы -->
+    {% if crew %}
+        <h3 class="mt-4" data-aos="fade-right">Другие члены съемочной группы</h3>
+        <div class="row">
+            {% for credit in crew %}
+                <div class="col-md-2 mb-3" data-aos="fade-up" data-aos-delay="{{ forloop.counter|add:'100' }}">
+                    <div class="card">
+                        {% if credit.person.photo_url %}
+                            <a href="{% url 'movies:person_detail' credit.person.id %}">
+                                <img src="{{ credit.person.photo_url }}" class="card-img-top" alt="{{ credit.person.name }}">
+                            </a>
+                        {% else %}
+                            <img src="https://via.placeholder.com/150x200" class="card-img-top" alt="Нет фото">
+                        {% endif %}
+                        <div class="card-body">
+                            <h6 class="card-title">
+                                <a href="{% url 'movies:person_detail' credit.person.id %}">{{ credit.person.name }}</a>
+                                <small class="text-muted">({{ credit.role }})</small>
+                            </h6>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+    <!-- Отзывы -->
+<h3 class="mt-4" data-aos="fade-right">Отзывы</h3>
+{% if reviews %}
+    {% for review in reviews %}
+        <div class="card mb-3 review-card" data-review-id="{{ review.id }}" data-aos="fade-up" data-aos-delay="{{ forloop.counter|add:'100' }}">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <a href="{% url 'users:user_profile' review.user.id %}">{{ review.user.username }}</a>
+                    <small class="text-muted">{{ review.created_at|date:"d M Y" }}</small>
+                </h5>
+                <p class="card-text"><strong>Оценка:</strong> {{ review.rating }}</p>
+                {% if review.review_text %}
+                    <p class="card-text"><strong>Отзыв:</strong> {{ review.review_text }}</p>
+                {% endif %}
+                {% if user.is_authenticated and user.is_admin %}
+                    <button class="btn btn-danger btn-sm delete-review" data-review-id="{{ review.id }}">Удалить</button>
+                {% endif %}
+            </div>
+        </div>
+    {% endfor %}
+{% else %}
+    <p data-aos="fade-up">Нет отзывов для этого фильма.</p>
+{% endif %}
+        <!-- Форма для оставления или редактирования отзыва -->
+    {% if user.is_authenticated %}
+        <h4 class="mt-4" data-aos="fade-right">{% if user_review %}Изменить ваш отзыв{% else %}Оставьте свой отзыв{% endif %}</h4>
+        <form method="post" data-aos="fade-up">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="btn btn-primary">{% if user_review %}Обновить отзыв{% else %}Отправить отзыв{% endif %}</button>
+            {% if user_review %}
+                <a href="{% url 'movies:delete_own_review' user_review.id %}" class="btn btn-danger ms-2" onclick="return confirm('Вы уверены, что хотите удалить свой отзыв?')">Удалить отзыв</a>
+            {% endif %}
+        </form>
+    {% else %}
+        <p data-aos="fade-up"><a href="{% url 'users:login' %}">Войдите</a>, чтобы оставить отзыв.</p>
+    {% endif %}
+    <!-- Похожие фильмы -->
+    <h2 class="mt-4" data-aos="fade-right">Недавние фильмы</h2>
+    <div class="row">
+        {% for recent in recent_movies %}
+            <div class="col-md-4 mb-3" data-aos="fade-up" data-aos-delay="{{ forloop.counter|add:'100' }}">
+                <a href="{% url 'movies:movie_detail' recent.id %}" class="text-decoration-none">
+                    <div class="card">
+                        <img src="{{ recent.poster_url|default:'https://via.placeholder.com/200x300' }}" class="card-img-top" alt="{{ recent.title }}">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ recent.title }}</h5>
+                            <p class="card-text">Рейтинг: {{ recent.rating }}</p>
+                            <p class="card-text">Дата выхода: {{ recent.release_date }}</p>
+                            <p class="card-text">
+                                <small class="text-muted">
+                                    {% for genre in recent.genres.all %}
+                                        {{ genre.name }}{% if not forloop.last %}, {% endif %}
+                                    {% empty %}
+                                        не указаны
+                                    {% endfor %}
+                                </small>
+                            </p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        {% empty %}
+            <p data-aos="fade-up">Нет недавних фильмов.</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    const trailerUrls = {{ movie.trailer_urls|safe|default:"[]" }};
+    let currentTrailerIndex = 0;
+
+    // Функция для обновления состояния кнопок
+    function updateButtons() {
+        $('#prev-trailer').prop('disabled', currentTrailerIndex === 0);
+        $('#next-trailer').prop('disabled', currentTrailerIndex === trailerUrls.length - 1);
+    }
+
+    // Функция для загрузки трейлера по индексу
+    function loadTrailer(index) {
+        if (index >= 0 && index < trailerUrls.length) {
+            currentTrailerIndex = index;
+            const trailerUrl = trailerUrls[currentTrailerIndex];
+            const embedUrl = trailerUrl.replace("watch?v=", "embed/");
+            $('#trailer-iframe').attr('src', embedUrl);
+            updateButtons();
+        }
+    }
+
+    // Обработчик для кнопки "Предыдущий трейлер"
+    $('#prev-trailer').click(function() {
+        if (currentTrailerIndex > 0) {
+            loadTrailer(currentTrailerIndex - 1);
+        }
+    });
+
+    // Обработчик для кнопки "Следующий трейлер"
+    $('#next-trailer').click(function() {
+        if (currentTrailerIndex < trailerUrls.length - 1) {
+            loadTrailer(currentTrailerIndex + 1);
+        }
+    });
+
+    // Инициализация состояния кнопок
+    updateButtons();
+
+    // Кнопка "Добавить в отложенные"
+    $('.add-to-watchlist').click(function() {
+        const movieId = $(this).data('movie-id');
+        $.ajax({
+            url: "{% url 'movies:add_to_watchlist' 0 %}".replace('0', movieId),
+            method: 'POST',
+            headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+            success: function(data) {
+                alert('Фильм добавлен в отложенные!');
+            },
+            error: function() {
+                alert('Ошибка! Пожалуйста, войдите в аккаунт.');
+            }
+        });
+    });
+
+    // Кнопка "Отметить как просмотренный"
+    $('.mark-as-watched').click(function() {
+        const movieId = $(this).data('movie-id');
+        $.ajax({
+            url: "{% url 'movies:mark_as_watched' 0 %}".replace('0', movieId),
+            method: 'POST',
+            headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+            success: function(data) {
+                alert('Фильм отмечен как просмотренный!');
+            },
+            error: function() {
+                alert('Ошибка! Пожалуйста, войдите в аккаунт.');
+            }
+        });
+    });
+
+    // Кнопка "Удалить отзыв" (для админов)
+    $('.delete-review').click(function() {
+        const reviewId = $(this).data('review-id');
+        if (confirm('Вы уверены, что хотите удалить этот отзыв?')) {
+            $.ajax({
+                url: "{% url 'movies:delete_review' 0 %}".replace('0', reviewId),
+                method: 'POST',
+                headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+                success: function(data) {
+                    $(`.review-card[data-review-id="${reviewId}"]`).remove();
+                    alert('Отзыв успешно удалён!');
+                },
+                error: function(xhr, status, error) {
+                    alert('Ошибка при удалении отзыва: ' + (xhr.responseJSON?.error || 'Неизвестная ошибка'));
+                }
+            });
+        }
+    });
+
+    // Загрузка дополнительных актеров
+    $('#load-more-actors').click(function() {
+        const button = $(this);
+        const movieId = button.data('movie-id');
+        const offset = $('#actors-list .actor-card').length;
+
+        $.ajax({
+            url: "{% url 'movies:load_more_movie_actors' %}",
+            type: 'GET',
+            data: {
+                'movie_id': movieId,
+                'offset': offset
+            },
+            success: function(data) {
+                if (data.actors.length > 0) {
+                    const actorsList = $('#actors-list');
+                    $.each(data.actors, function(index, actor) {
+                        const actorUrl = `/movies/actor/${actor.id}/`;
+                        const actorHtml = `
+                            <div class="col-md-2 mb-3 actor-card" data-aos="fade-up" data-aos-delay="${(index + 1) * 100}">
+                                <div class="card">
+                                    ${actor.photo_url ? `<a href="${actorUrl}"><img src="${actor.photo_url}" class="card-img-top" alt="${actor.name}"></a>` : '<img src="https://via.placeholder.com/150x200" class="card-img-top" alt="Нет фото">'}
+                                    <div class="card-body">
+                                        <h6 class="card-title">
+                                            <a href="${actorUrl}">${actor.name}</a>
+                                        </h6>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        actorsList.append(actorHtml);
+                    });
+                    if (!data.has_more) {
+                        button.hide();
+                    }
+                    AOS.refresh();
+                } else {
+                    button.hide();
+                }
+            },
+            error: function(xhr, status, error) {
+                alert('Ошибка при загрузке актеров.');
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

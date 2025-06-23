@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% load custom_filters %}
+
+{% block content %}
+<div class="container mt-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'movies:movie_list' %}">Главная</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ person.name }}</li>
+        </ol>
+    </nav>
+
+    <h1 data-aos="fade-right">{{ person.name }}</h1>
+
+    <div class="row" data-aos="fade-up">
+        <div class="col-md-4">
+            {% if person.photo_url %}
+                <img src="{{ person.photo_url }}" class="img-fluid rounded" alt="{{ person.name }}">
+            {% else %}
+                <p>Фото отсутствует</p>
+            {% endif %}
+        </div>
+        <div class="col-md-8">
+            {% if person.birth_date %}
+                <p><strong>Дата рождения:</strong> {{ person.birth_date|date:"d M Y" }}</p>
+            {% else %}
+                <p><strong>Дата рождения:</strong> Не указана</p>
+            {% endif %}
+
+            {% if person.bio %}
+                <p><strong>Биография:</strong> {{ person.bio }}</p>
+            {% else %}
+                <p><strong>Биография:</strong> Не указана</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <h3 class="mt-4" data-aos="fade-right">Работы</h3>
+    {% if credits %}
+        <div class="row">
+            {% for credit in credits %}
+                <div class="col-md-4 mb-4" data-aos="fade-up" data-aos-delay="{{ forloop.counter|add:'100' }}">
+                    <div class="card h-100">
+                        <a href="{% url 'movies:movie_detail' credit.movie.id %}">
+                            {% if credit.movie.poster_url %}
+                                <img src="{{ credit.movie.poster_url }}" class="card-img-top" alt="{{ credit.movie.title }}">
+                            {% else %}
+                                <img src="https://placehold.co/200x300" class="card-img-top" alt="Нет постера">
+                            {% endif %}
+                        </a>
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                <a href="{% url 'movies:movie_detail' credit.movie.id %}">{{ credit.movie.title }}</a>
+                            </h5>
+                            <p class="card-text">
+                                <strong>Роль:</strong> {{ credit.role|translate_role }}
+                            </p>
+                            <p class="card-text">
+                                {% if credit.movie.release_date %}
+                                    Дата выхода: {{ credit.movie.release_date|date:"d M Y" }}
+                                {% else %}
+                                    Дата выхода: неизвестна
+                                {% endif %}
+                            </p>
+                            <p class="card-text">
+                                <small class="text-muted">
+                                    <strong>Жанры:</strong>
+                                    {% for genre in credit.movie.genres.all %}
+                                        {{ genre.name }}{% if not forloop.last %}, {% endif %}
+                                    {% empty %}
+                                        Не указаны
+                                    {% endfor %}
+                                </small>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>Работы не найдены</p>
+    {% endif %}
+</div>
+{% endblock %}

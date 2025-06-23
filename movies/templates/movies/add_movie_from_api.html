@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Добавить фильм через API</title>
+</head>
+<body>
+    <h2>Добавить фильм через TMDb</h2>
+    <form method="POST">
+        {% csrf_token %}
+        <label for="tmdb_movie_id">Введите ID фильма TMDb:</label>
+        <input type="text" id="tmdb_movie_id" name="tmdb_movie_id" required>
+        <button type="submit">Добавить фильм</button>
+    </form>
+    <a href="{% url 'home' %}">Назад на главную</a>
+</body>
+</html>

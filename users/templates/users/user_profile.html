@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+{% block title %}Профиль {{ profile_user.username }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Хлебные крошки -->
+    <nav aria-label="breadcrumb" data-aos="fade-right">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'movies:movie_list' %}">Главная</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Профиль {{ profile_user.username }}</li>
+        </ol>
+    </nav>
+
+    <div class="row" data-aos="fade-up">
+        <div class="col-md-12">
+            <h1>Профиль {{ profile_user.username }}</h1>
+            <p><strong>Имя:</strong> {{ profile_user.first_name }} {{ profile_user.last_name }}</p>
+
+            <p><strong>Биография:</strong> {{ profile_user.bio|default:"Не указана" }}</p>
+            <p><strong>Статус:</strong> {% if profile_user.is_blocked %}Заблокирован{% else %}Активен{% endif %}</p>
+            {% if user.is_authenticated and user.is_admin and user != profile_user %}
+                <button class="btn btn-danger block-user" data-user-id="{{ profile_user.id }}">
+                    {% if profile_user.is_blocked %}Разблокировать{% else %}Заблокировать{% endif %}
+                </button>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Список отзывов пользователя -->
+    <h3 class="mt-4" data-aos="fade-right">Отзывы пользователя</h3>
+    {% if reviews %}
+        {% for review in reviews %}
+            <div class="card mb-3" data-aos="fade-up" data-aos-delay="{{ forloop.counter|add:'100' }}">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <a href="{% url 'movies:movie_detail' review.movie.id %}">{{ review.movie.title }}</a>
+                        <small class="text-muted">{{ review.created_at|date:"d M Y" }}</small>
+                    </h5>
+                    <p class="card-text"><strong>Оценка:</strong> {{ review.rating }}</p>
+                    {% if review.review_text %}
+                        <p class="card-text"><strong>Отзыв:</strong> {{ review.review_text }}</p>
+                    {% endif %}
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <p data-aos="fade-up">Пользователь не оставил отзывов.</p>
+    {% endif %}
+</div>
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // Обработчик для блокировки/разблокировки пользователя
+    $('.block-user').click(function() {
+        const userId = $(this).data('user-id');
+        const isBlocked = $(this).text().trim() === 'Разблокировать';
+        const action = isBlocked ? 'разблокировать' : 'заблокировать';
+        if (confirm(`Вы уверены, что хотите ${action} пользователя?`)) {
+            $.ajax({
+                url: "{% url 'users:block_user' 0 %}".replace('0', userId),
+                method: 'POST',
+                headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+                success: function(data) {
+                    alert(data.message);
+                    $('.block-user').text(isBlocked ? 'Заблокировать' : 'Разблокировать');
+                    $('p:contains("Статус:")').text('Статус: ' + (isBlocked ? 'Активен' : 'Заблокирован'));
+                },
+                error: function(xhr, status, error) {
+                    alert('Ошибка: ' + (xhr.responseJSON?.error || 'Неизвестная ошибка'));
+                }
+            });
+        }
+    });
+});
+</script>
+{% endblock %}
+{% endblock %}

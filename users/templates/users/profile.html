@@ -1,0 +1,124 @@
+<!-- users/templates/users/profile.html -->
+{% extends 'base.html' %}
+
+{% block title %}Личный кабинет{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Хлебные крошки -->
+    <nav aria-label="breadcrumb" data-aos="fade-right">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'movies:movie_list' %}">Главная</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Личный кабинет</li>
+        </ol>
+    </nav>
+
+    <h1 data-aos="fade-right">Добро пожаловать, {{ user.username }}</h1>
+    <p data-aos="fade-up"><strong>Электронная почта:</strong> {{ user.email }}</p>
+
+    <!-- Статистика -->
+    <h2 data-aos="fade-right">Статистика</h2>
+    <ul data-aos="fade-up">
+        <li>Просмотрено фильмов: {{ watched_count }}</li>
+        <li>Отложено фильмов: {{ watchlist_count }}</li>
+    </ul>
+
+
+    <!-- Избранные актеры -->
+    <h2 data-aos="fade-right">Избранные актеры</h2>
+    <div class="row">
+        {% for favorite in favorite_actors %}
+            <div class="col-md-3 mb-3" data-aos="fade-up" data-aos-delay="{{ forloop.counter|add:'100' }}">
+                <div class="card h-100">
+                    <a href="{% url 'movies:actor_detail' favorite.actor.id %}">
+                        {% if favorite.actor.photo_url %}
+                            <img src="{{ favorite.actor.photo_url }}" class="card-img-top" alt="{{ favorite.actor.name }}">
+                        {% else %}
+                            <img src="https://placehold.co/200x300" class="card-img-top" alt="Нет фото">
+                        {% endif %}
+                    </a>
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <a href="{% url 'movies:actor_detail' favorite.actor.id %}">{{ favorite.actor.name }}</a>
+                        </h5>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <p data-aos="fade-up">У вас нет избранных актеров.</p>
+        {% endfor %}
+    </div>
+
+    <!-- Отложенные фильмы -->
+    <h2 data-aos="fade-right">Отложенные фильмы</h2>
+    <div class="d-flex flex-row flex-nowrap overflow-auto">
+        {% for item in watchlist_movies %}
+            <div class="card mx-2" style="min-width: 200px;" data-aos="fade-up" data-aos-delay="{{ forloop.counter|add:'100' }}">
+                <a href="{% url 'movies:movie_detail' item.movie.id %}" class="text-decoration-none">
+                    <img src="{{ item.movie.poster_url }}" class="card-img-top" alt="{{ item.movie.title }}">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ item.movie.title }}</h5>
+                        <p class="card-text">Рейтинг: {{ item.movie.rating }}</p>
+                        <p class="card-text">{{ item.movie.release_date }}</p>
+                    </div>
+                </a>
+            </div>
+        {% empty %}
+            <p data-aos="fade-up">Список пуст</p>
+        {% endfor %}
+    </div>
+
+    <!-- Просмотренные фильмы -->
+    <h2 data-aos="fade-right">Просмотренные фильмы</h2>
+    <div class="d-flex flex-row flex-nowrap overflow-auto">
+        {% for item in watched_movies %}
+            <div class="card mx-2" style="min-width: 200px;" data-aos="fade-up" data-aos-delay="{{ forloop.counter|add:'100' }}">
+                <a href="{% url 'movies:movie_detail' item.movie.id %}" class="text-decoration-none">
+                    <img src="{{ item.movie.poster_url }}" class="card-img-top" alt="{{ item.movie.title }}">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ item.movie.title }}</h5>
+                        <p class="card-text">Рейтинг: {{ item.movie.rating }}</p>
+                        <p class="card-text">{{ item.movie.release_date }}</p>
+                    </div>
+                </a>
+            </div>
+        {% empty %}
+            <p data-aos="fade-up">Список пуст</p>
+        {% endfor %}
+    </div>
+
+    <!-- Отзывы -->
+    <h2 data-aos="fade-right">Мои отзывы</h2>
+    <div class="row">
+        {% if reviews %}
+            {% for review in reviews %}
+                <div class="col-md-3 mb-3" data-aos="fade-up" data-aos-delay="{{ forloop.counter|add:'100' }}">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                <a href="{% url 'movies:movie_detail' review.movie.id %}">
+                                    {{ review.movie.title }}
+                                </a>
+                            </h5>
+                            <p class="card-text"><strong>Оценка:</strong> {{ review.rating }}</p>
+                            {% if review.review_text %}
+                                <p class="card-text"><strong>Отзыв:</strong> {{ review.review_text }}</p>
+                            {% endif %}
+                        </div>
+                        <div class="card-footer">
+                            <small class="text-muted">{{ review.created_at|date:"d M Y" }}</small>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p data-aos="fade-up">Пока отзывов нет.</p>
+        {% endif %}
+    </div>
+
+    <!-- Ссылка на редактирование профиля -->
+    <div data-aos="fade-up">
+        <a href="{% url 'users:edit_profile' %}" class="btn btn-outline-primary">Редактировать профиль</a>
+    </div>
+</div>
+{% endblock %}

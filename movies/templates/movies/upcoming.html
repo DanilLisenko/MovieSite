@@ -1,0 +1,12 @@
+<h1>Предстоящие фильмы</h1>
+{% for movie in upcoming_movies %}
+    <div>
+        <h2>{{ movie.title }}</h2>
+        <p>Дата выхода: {{ movie.release_date }}</p>
+        {% if movie.poster_url %}
+            <img src="{{ movie.poster_url }}" alt="{{ movie.title }} poster">
+        {% endif %}
+    </div>
+{% empty %}
+    <p>Нет предстоящих фильмов.</p>
+{% endfor %}

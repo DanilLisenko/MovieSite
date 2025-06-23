@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+{% load movie_tags %}
+
+<!-- Версия шаблона: final_2025-04-13_poster_v3 -->
+
+{% block title %}Подборки фильмов{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Хлебные крошки -->
+    <nav aria-label="breadcrumb" data-aos="fade-right">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'movies:movie_list' %}">Главная</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Подборки</li>
+        </ol>
+    </nav>
+
+    <h1 data-aos="fade-right">Подборки фильмов</h1>
+
+    <div class="collections-grid">
+        <!-- Топ-100 фильмов -->
+        <a href="{% url 'movies:collection_detail' collection_type='top-100' %}" class="collection-item" data-aos="fade-up">
+            <img src="{{ posters|lookup:'top-100' }}" alt="Топ-100 фильмов">
+            <h3>Топ-100 фильмов</h3>
+        </a>
+
+        <!-- Жанры -->
+        {% for genre in genres %}
+            {% if genre.name %}
+                {% with slug='genre-'|add:genre.name|translit_slug %}
+                    {% if slug != 'genre-' and slug %}
+                        <a href="{% url 'movies:collection_detail' collection_type=slug %}" class="collection-item" data-aos="fade-up">
+                            <img src="{{ posters|lookup:slug }}" alt="{{ genre.name }}">
+                            <h3>Жанр: {{ genre.name }}</h3>
+                        </a>
+                    {% endif %}
+                {% endwith %}
+            {% endif %}
+        {% endfor %}
+
+        <!-- Годы (2020–2023) -->
+        {% for year in years %}
+            {% with year_str=year|stringformat:"s" %}
+                {% with year_slug='year-'|add:year_str %}
+                    <a href="{% url 'movies:collection_detail' collection_type=year_slug %}" class="collection-item" data-aos="fade-up">
+                        <img src="{{ posters|lookup:year_slug }}" alt="Фильмы {{ year }}">
+                        <h3>Фильмы {{ year }}</h3>
+                    </a>
+                {% endwith %}
+            {% endwith %}
+        {% endfor %}
+
+        <!-- 2010–2020 -->
+        <a href="{% url 'movies:collection_detail' collection_type='decade-2010s' %}" class="collection-item" data-aos="fade-up">
+            <img src="{{ posters|lookup:'decade-2010s' }}" alt="2010–2020">
+            <h3>2010–2020 годы</h3>
+        </a>
+
+        <!-- Десятилетия -->
+        {% for decade in decades %}
+            {% with decade_str=decade.start_year|stringformat:"s" %}
+                {% with decade_slug='decade-'|add:decade_str %}
+                    <a href="{% url 'movies:collection_detail' collection_type=decade_slug %}" class="collection-item" data-aos="fade-up">
+                        <img src="{{ posters|lookup:decade_slug }}" alt="{{ decade.label }}">
+                        <h3>{{ decade.label }} годы</h3>
+                    </a>
+                {% endwith %}
+            {% endwith %}
+        {% endfor %}
+    </div>
+</div>
+
+<style>
+.collections-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+}
+.collection-item {
+    text-decoration: none;
+    color: inherit;
+    text-align: center;
+}
+.collection-item img {
+    width: 100%;
+    height: 300px;
+    object-fit: cover;
+    border-radius: 8px;
+}
+.collection-item h3 {
+    margin: 10px 0 0;
+    font-size: 1.2rem;
+}
+</style>
+{% endblock %}

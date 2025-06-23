@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ collection_title }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Хлебные крошки -->
+    <nav aria-label="breadcrumb" data-aos="fade-right">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'movies:movie_list' %}">Главная</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'movies:movie_collections' %}">Подборки</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ collection_title }}</li>
+        </ol>
+    </nav>
+
+    <h1 data-aos="fade-right">{{ collection_title }}</h1>
+
+    {% if movies %}
+        <div class="movies-grid">
+            {% for movie in movies %}
+                <div class="card" data-aos="fade-up">
+                    <a href="{% url 'movies:movie_detail' movie.id %}" class="text-decoration-none">
+                        <img src="{{ movie.poster_url }}" class="card-img-top" alt="{{ movie.title }}">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ movie.title }}</h5>
+                            <p class="card-text">Рейтинг: {{ movie.rating }}</p>
+                            <p class="card-text">{{ movie.release_date|date:"Y" }}</p>
+                        </div>
+                    </a>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p data-aos="fade-up">Фильмы отсутствуют.</p>
+    {% endif %}
+</div>
+
+<style>
+.movies-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    margin-top: 20px;
+}
+.card {
+    width: 100%;
+}
+.card-img-top {
+    height: 300px;
+    object-fit: cover;
+}
+.card-body {
+    padding: 10px;
+}
+.card-title {
+    font-size: 1.1rem;
+    margin-bottom: 5px;
+}
+.card-text {
+    font-size: 0.9rem;
+    margin: 0;
+}
+@media (max-width: 992px) {
+    .movies-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+@media (max-width: 768px) {
+    .movies-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+@media (max-width: 576px) {
+    .movies-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+{% endblock %}

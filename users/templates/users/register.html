@@ -1,0 +1,18 @@
+<!-- users/templates/users/register.html -->
+{% extends 'base.html' %}
+
+{% block title %}Регистрация{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 data-aos="fade-right">Регистрация</h1>
+    <form method="post" data-aos="fade-up">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary">Зарегистрироваться</button>
+    </form>
+    <p data-aos="fade-up" class="mt-3">
+        Уже есть аккаунт? <a href="{% url 'users:login' %}">Войдите</a>
+    </p>
+</div>
+{% endblock %}

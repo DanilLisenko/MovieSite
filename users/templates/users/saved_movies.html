@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Список отложенных фильмов</title>
+</head>
+<body>
+    <h2>Список отложенных фильмов</h2>
+    <ul>
+        {% for movie in saved_movies %}
+            <li>
+                {{ movie.title }} (Добавлено: {{ movie.added_at|date:"d.m.Y H:i" }})
+                <form action="{% url 'users:delete_movie' movie.id %}" method="post" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit">Удалить</button>
+                </form>
+            </li>
+            <ul>
+            {% for movie in watchlist %}
+                <li>
+                    {{ movie.movie.title }}
+                    <a href="{% url 'movies:delete_movie' movie.id %}">Удалить</a>
+                </li>
+            {% endfor %}
+            </ul>
+        {% empty %}
+            <p>Список отложенных фильмов пуст.</p>
+        {% endfor %}
+    </ul>
+    <a href="{% url 'users:add_movie' %}">Добавить фильм</a><br>
+    <a href="{% url 'users:profile' %}">Вернуться в профиль</a>
+</body>
+</html>
